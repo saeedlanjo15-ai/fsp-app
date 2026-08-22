@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="ur" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FSP — Family Support Program</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#17211d; --teal-900:#0f2b26; --teal-800:#163832; --teal-700:#1f4a41; --teal-600:#2c6357;
+  --parchment:#f6f2e8; --parchment-dim:#ece5d3; --card:#ffffff; --gold:#c08a2e; --gold-soft:#e6c98a;
+  --line:#d9d0ba; --line-strong:#b9ac8a; --success:#3f7d58; --danger:#b23a2e; --warn:#b3781e; --muted:#6b6255;
+  --font-display:'Fraunces', serif; --font-body:'IBM Plex Sans', sans-serif; --font-mono:'IBM Plex Mono', monospace;
+  --radius:10px; --sidebar-w:264px;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{font-family:var(--font-body); background:var(--parchment); color:var(--ink); -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(circle at 1px 1px, rgba(0,0,0,0.035) 1px, transparent 0); background-size:22px 22px;}
+a{color:inherit; text-decoration:none;}
+ul{list-style:none;}
+button{font-family:inherit; cursor:pointer;}
+input, select, textarea{font-family:inherit;}
+::selection{background:var(--gold-soft); color:var(--teal-900);}
+
+/* ===== LOGIN SCREEN ===== */
+.login-screen{
+  min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+  background:linear-gradient(180deg, var(--teal-900), var(--teal-800));
+}
+.login-card{
+  background:var(--card); border-radius:14px; width:100%; max-width:400px;
+  padding:34px 30px; box-shadow:0 20px 60px rgba(0,0,0,0.35);
+}
+.login-mark{
+  width:52px; height:52px; border-radius:12px; margin:0 auto 16px;
+  background:linear-gradient(135deg, var(--gold), #8f6420);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:700; color:var(--teal-900); font-size:22px;
+}
+.login-title{font-family:var(--font-display); font-size:22px; font-weight:600; text-align:center; color:var(--teal-900);}
+.login-sub{font-size:12.5px; text-align:center; color:var(--muted); margin-top:4px; margin-bottom:24px;}
+.login-tabs{display:flex; background:var(--parchment-dim); border-radius:8px; padding:3px; margin-bottom:20px;}
+.login-tab{flex:1; text-align:center; padding:8px; border-radius:6px; font-size:12.5px; font-weight:600; color:var(--muted); cursor:pointer;}
+.login-tab.active{background:var(--card); color:var(--teal-800); box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.login-err{
+  background:#f6e1de; color:var(--danger); font-size:12px; padding:9px 12px; border-radius:8px;
+  margin-bottom:14px; display:none;
+}
+.login-err.show{display:block;}
+.field{margin-bottom:14px;}
+.field label{display:block; font-size:11.5px; font-weight:600; color:var(--teal-800); margin-bottom:5px; text-transform:uppercase; letter-spacing:0.3px;}
+.field input, .field select, .field textarea{
+  width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--parchment); font-size:13.5px;
+}
+.field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--gold-soft); border-color:var(--gold);}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px; padding:9px 16px; border-radius:8px;
+  font-size:13px; font-weight:600; border:1px solid transparent; transition:filter .15s ease, transform .1s ease;
+}
+.btn:active{transform:translateY(1px);}
+.btn:disabled{opacity:0.6; cursor:not-allowed;}
+.btn-primary{background:var(--teal-800); color:#fff;}
+.btn-primary:hover{filter:brightness(1.12);}
+.btn-gold{background:var(--gold); color:#3a2a05;}
+.btn-gold:hover{filter:brightness(1.08);}
+.btn-ghost{background:var(--card); border-color:var(--line); color:var(--teal-800);}
+.btn-ghost:hover{background:var(--parchment-dim);}
+.btn-sm{padding:6px 11px; font-size:12px;}
+.btn-block{width:100%;}
+.login-foot{text-align:center; font-size:10.5px; color:var(--muted); margin-top:18px;}
+.spinner{
+  width:16px; height:16px; border-radius:50%; border:2px solid rgba(255,255,255,0.4); border-top-color:#fff;
+  animation:spin .7s linear infinite; display:inline-block;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.conn-badge{
+  position:fixed; top:14px; right:16px; font-size:11px; padding:6px 12px; border-radius:999px;
+  background:var(--card); border:1px solid var(--line); color:var(--muted); z-index:200; display:flex; align-items:center; gap:6px;
+}
+.conn-dot{width:7px; height:7px; border-radius:50%; background:var(--warn);}
+.conn-dot.ok{background:var(--success);}
+.conn-dot.err{background:var(--danger);}
+
+/* ===== APP SHELL ===== */
+.app{display:none; grid-template-columns:var(--sidebar-w) 1fr; min-height:100vh;}
+.app.show{display:grid;}
+.sidebar{
+  background:linear-gradient(180deg, var(--teal-900), var(--teal-800) 60%, var(--teal-700)); color:#eef3ef;
+  display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow-y:auto;
+  border-right:1px solid rgba(0,0,0,0.25);
+}
+.brand{padding:22px 20px 16px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,0.08);}
+.brand-mark{width:38px; height:38px; border-radius:8px; background:linear-gradient(135deg, var(--gold), #8f6420);
+  display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; color:var(--teal-900); font-size:18px; flex-shrink:0;}
+.brand-text{line-height:1.15;}
+.brand-text .name{font-family:var(--font-display); font-size:17px; font-weight:600;}
+.brand-text .sub{font-size:11px; color:#b9cdc4; letter-spacing:0.6px; text-transform:uppercase; margin-top:2px;}
+.nav-scroll{flex:1; padding:14px 10px 10px;}
+.nav-group{margin-bottom:4px;}
+.nav-group-label{font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:#8fab9f; padding:14px 12px 6px; font-weight:600;}
+.nav-item{display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; font-size:13.5px; color:#dbe8e2; cursor:pointer;
+  transition:background .15s ease, color .15s ease; white-space:nowrap;}
+.nav-item .ic{width:18px; height:18px; flex-shrink:0; display:flex; align-items:center; justify-content:center; opacity:0.85;}
+.nav-item:hover{background:rgba(255,255,255,0.06); color:#fff;}
+.nav-item.active{background:rgba(230,201,138,0.14); color:#f6e9c9; font-weight:600; box-shadow:inset 3px 0 0 var(--gold);}
+.sidebar-foot{padding:14px 16px 18px; border-top:1px solid rgba(255,255,255,0.08); font-size:10.5px; color:#7f9a8f; letter-spacing:0.3px;}
+.sidebar-foot b{color:#c9d9d1; font-weight:600;}
+
+.main{min-width:0; display:flex; flex-direction:column;}
+.topbar{background:var(--card); border-bottom:1px solid var(--line); padding:14px 28px; display:flex; align-items:center; gap:18px; position:sticky; top:0; z-index:5;}
+.page-title{font-family:var(--font-display); font-size:22px; font-weight:600; color:var(--teal-900); flex-shrink:0;}
+.global-search{flex:1; max-width:420px; position:relative;}
+.global-search input{width:100%; padding:9px 14px 9px 34px; border:1px solid var(--line); border-radius:8px; background:var(--parchment); font-size:13px;}
+.global-search input:focus{outline:2px solid var(--gold-soft); border-color:var(--gold);}
+.global-search .gicon{position:absolute; left:11px; top:50%; transform:translateY(-50%); opacity:0.5; font-size:14px;}
+.topbar-right{margin-left:auto; display:flex; align-items:center; gap:14px;}
+.role-pill{font-size:11.5px; padding:6px 12px; border-radius:999px; background:var(--parchment-dim); border:1px solid var(--line); color:var(--teal-800); font-weight:600; display:flex; align-items:center; gap:6px;}
+.bell{width:36px; height:36px; border-radius:8px; border:1px solid var(--line); background:var(--card); display:flex; align-items:center; justify-content:center; position:relative; font-size:15px; cursor:pointer;}
+.bell .dot{position:absolute; top:6px; right:7px; width:7px; height:7px; border-radius:50%; background:var(--danger); border:1.5px solid var(--card); display:none;}
+.bell .dot.show{display:block;}
+.avatar{width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, var(--teal-600), var(--teal-800)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; font-family:var(--font-display); cursor:pointer;}
+.content{padding:26px 28px 60px; flex:1;}
+
+.section-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;}
+.section-head h2{font-family:var(--font-display); font-size:19px; font-weight:600; color:var(--teal-900);}
+.section-head .desc{font-size:12.5px; color:var(--muted); margin-top:3px;}
+.card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);}
+
+.kpi-grid{display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:22px;}
+@media (max-width:1200px){ .kpi-grid{grid-template-columns:repeat(3,1fr);} }
+@media (max-width:900px){ .kpi-grid{grid-template-columns:repeat(2,1fr);} }
+.kpi{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px 16px 14px; position:relative; overflow:hidden;}
+.kpi::before{content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--bar, var(--gold));}
+.kpi .k-label{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:600;}
+.kpi .k-value{font-family:var(--font-mono); font-size:22px; font-weight:600; color:var(--teal-900); margin-top:8px;}
+.kpi .k-sub{font-size:11px; margin-top:6px; color:var(--muted);}
+
+.table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:var(--radius); background:var(--card);}
+table{width:100%; border-collapse:collapse; font-size:13px;}
+thead th{text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.6px; color:var(--parchment); background:var(--teal-800); padding:11px 14px; font-weight:600; white-space:nowrap;}
+thead th:first-child{border-top-left-radius:var(--radius);}
+thead th:last-child{border-top-right-radius:var(--radius);}
+tbody td{padding:11px 14px; border-bottom:1px dashed var(--line); color:var(--ink); white-space:nowrap;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:var(--parchment);}
+.mono{font-family:var(--font-mono);}
+.tag{display:inline-block; padding:3px 9px; border-radius:999px; font-size:10.5px; font-weight:600; letter-spacing:0.3px;}
+.tag-green{background:#e2f0e6; color:var(--success);}
+.tag-amber{background:#f7ecd6; color:var(--warn);}
+.tag-red{background:#f6e1de; color:var(--danger);}
+.tag-teal{background:#dcece7; color:var(--teal-700);}
+
+.two-col{display:grid; grid-template-columns:1.3fr 1fr; gap:16px;}
+@media (max-width:1100px){ .two-col{grid-template-columns:1fr;} }
+.list-card .card-title{padding:14px 16px; border-bottom:1px solid var(--line); font-family:var(--font-display); font-weight:600; font-size:15px; color:var(--teal-900); display:flex; justify-content:space-between; align-items:center;}
+.list-row{display:flex; align-items:center; gap:12px; padding:11px 16px; border-bottom:1px dashed var(--line); font-size:13px;}
+.list-row:last-child{border-bottom:none;}
+.list-row .dot-ic{width:30px; height:30px; border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--parchment-dim); color:var(--teal-800); font-size:14px;}
+.list-row .lr-title{font-weight:600; color:var(--ink);}
+.list-row .lr-sub{font-size:11.5px; color:var(--muted); margin-top:1px;}
+.list-row .lr-right{margin-left:auto; text-align:right;}
+
+.chip-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+.chip{padding:7px 13px; border-radius:8px; font-size:12.5px; font-weight:600; background:var(--parchment-dim); border:1px solid var(--line); color:var(--teal-800); cursor:pointer;}
+.chip.active{background:var(--teal-800); color:#fff; border-color:var(--teal-800);}
+.toolbar{display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;}
+.toolbar input[type=text]{padding:8px 12px; border:1px solid var(--line); border-radius:8px; background:var(--card); font-size:12.5px;}
+.toolbar .spacer{flex:1;}
+.empty{text-align:center; padding:50px 20px; color:var(--muted);}
+.empty .e-ic{font-size:34px; margin-bottom:10px;}
+.empty .e-title{font-family:var(--font-display); font-size:16px; color:var(--teal-900); margin-bottom:4px;}
+.progress{height:7px; border-radius:4px; background:var(--parchment-dim); overflow:hidden;}
+.progress > div{height:100%; background:var(--gold);}
+.footer-credit{text-align:center; font-size:11px; color:var(--muted); padding:20px 0 6px; letter-spacing:0.3px;}
+.footer-credit b{color:var(--teal-800);}
+
+.modal-backdrop{position:fixed; inset:0; background:rgba(15,43,38,0.45); display:none; align-items:center; justify-content:center; z-index:50; padding:20px;}
+.modal-backdrop.show{display:flex;}
+.modal{background:var(--card); border-radius:12px; width:100%; max-width:480px; max-height:86vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.25);}
+.modal-head{padding:16px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
+.modal-head h3{font-family:var(--font-display); font-size:16px; color:var(--teal-900);}
+.modal-close{background:none; border:none; font-size:18px; color:var(--muted);}
+.modal-body{padding:18px 20px;}
+.modal-foot{padding:14px 20px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px;}
+
+.toast-stack{position:fixed; bottom:20px; right:20px; z-index:80; display:flex; flex-direction:column; gap:8px;}
+.toast{background:var(--teal-900); color:#fff; padding:11px 16px; border-radius:8px; font-size:13px; box-shadow:0 8px 24px rgba(0,0,0,0.2); display:flex; align-items:center; gap:8px; animation:slidein .25s ease;}
+@keyframes slidein{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+.menu-toggle{display:none; background:none; border:none; font-size:20px; color:var(--teal-800);}
+@media (max-width:880px){
+  .app{grid-template-columns:1fr;}
+  .sidebar{position:fixed; left:0; top:0; z-index:60; width:var(--sidebar-w); transform:translateX(-100%); transition:transform .2s ease;}
+  .sidebar.open{transform:translateX(0);}
+  .menu-toggle{display:flex;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important;} }
+</style>
+</head>
+<body>
+
+<div class="conn-badge" id="connBadge"><span class="conn-dot" id="connDot"></span><span id="connText">Connecting to Firebase…</span></div>
+
+<!-- ================= LOGIN SCREEN ================= -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-mark">FS</div>
+    <div class="login-title">Family Support Program</div>
+    <div class="login-sub">Sign in with your organization account</div>
+
+    <div class="login-tabs">
+      <div class="login-tab active" id="tabLogin">Sign In</div>
+      <div class="login-tab" id="tabSignup">Create Admin Account</div>
+    </div>
+
+    <div class="login-err" id="loginErr"></div>
+
+    <div id="loginForm">
+      <div class="field">
+        <label>Login As</label>
+        <div class="login-tabs" id="roleToggle" style="margin-bottom:0;">
+          <div class="login-tab active" id="roleAdmin" data-role="Admin">Admin</div>
+          <div class="login-tab" id="roleMember" data-role="Member">Member</div>
+        </div>
+      </div>
+      <div class="field"><label>Email</label><input type="email" id="liEmail" placeholder="you@organization.org" autocomplete="username"></div>
+      <div class="field"><label>Password</label><input type="password" id="liPassword" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="btn btn-primary btn-block" id="liSubmit">Sign In</button>
+    </div>
+
+    <div id="signupForm" style="display:none;">
+      <div class="field"><label>Admin Setup Code</label><input type="password" id="suSetupCode" placeholder="Enter the secret setup code"></div>
+      <div class="field"><label>Full Name</label><input type="text" id="suName" placeholder="e.g. Saeed Lanjo" value="Saeed Lanjo"></div>
+      <div class="field"><label>Email</label><input type="email" id="suEmail" placeholder="you@organization.org" autocomplete="username"></div>
+      <div class="field"><label>Password</label><input type="password" id="suPassword" placeholder="min 6 characters" autocomplete="new-password"></div>
+      <button class="btn btn-gold btn-block" id="suSubmit">Create Account &amp; Sign In</button>
+    </div>
+
+    <div class="login-foot">Developed by <b>Saeed ul Rehman</b> · Data stored securely in Firebase</div>
+  </div>
+</div>
+
+<!-- ================= APP SHELL ================= -->
+<div class="app" id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">FS</div>
+      <div class="brand-text"><div class="name">Family Support<br>Program</div><div class="sub">Welfare &amp; Fund Manager</div></div>
+    </div>
+    <nav class="nav-scroll" id="navScroll"></nav>
+    <div class="sidebar-foot">Developed by <b>Saeed ul Rehman</b><br>Live on Firebase</div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <div class="page-title" id="pageTitle">Dashboard</div>
+      <div class="global-search"><span class="gicon">⌕</span><input type="text" id="globalSearch" placeholder="Search Member ID, CNIC, Mobile, Receipt…"></div>
+      <div class="topbar-right">
+        <div class="role-pill">🛡 <span id="currentRoleLabel">Admin</span></div>
+        <div class="bell" id="bellBtn">🔔<span class="dot" id="bellDot"></span></div>
+        <div class="avatar" id="avatarBtn" title="Sign out">--</div>
+      </div>
+    </header>
+    <main class="content" id="content"></main>
+    <div class="footer-credit">Family Support Program — live Firebase-connected app · <b>Developed by Saeed ul Rehman</b></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-head"><h3 id="modalTitle">Title</h3><button class="modal-close" id="modalClose">✕</button></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script type="module">
+/* ======================================================
+   FSP — Firebase-connected app
+   Developed by Saeed ul Rehman
+   Real Firebase Auth + Firestore. No mock/sample data.
+   ====================================================== */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+  createUserWithEmailAndPassword, updateProfile, signOut
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import {
+  getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc,
+  onSnapshot, query, orderBy, where, serverTimestamp, runTransaction, getDoc
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD0XB8b5yiEhXje0qwcu8iQ7x1r9twteLw",
+  authDomain: "fsp-app-8b035.firebaseapp.com",
+  projectId: "fsp-app-8b035",
+  storageBucket: "fsp-app-8b035.firebasestorage.app",
+  messagingSenderId: "691683444206",
+  appId: "1:691683444206:web:984a1b64fae1812d877aff",
+  measurementId: "G-EZ1XVYM9MF"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+
+// Secondary app instance: lets an Admin create a login account for a Member
+// without signing the Admin out of their own session.
+const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+const secondaryAuth = getAuth(secondaryApp);
+
+
+/* ---------------- CONNECTION BADGE ---------------- */
+function setConn(state, text){
+  const dot = document.getElementById("connDot");
+  const txt = document.getElementById("connText");
+  dot.className = "conn-dot" + (state ? " "+state : "");
+  txt.textContent = text;
+  if(state === "ok") setTimeout(()=>{ document.getElementById("connBadge").style.display="none"; }, 2500);
+}
+setConn("", "Connecting to Firebase…");
+
+/* ---------------- UTILS ---------------- */
+const CURRENCY = "Rs.";
+function fmt(n){ return CURRENCY + " " + Math.round(n||0).toLocaleString("en-PK"); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function toast(msg, isError){
+  const stack = document.getElementById("toastStack");
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.style.background = isError ? "var(--danger)" : "var(--teal-900)";
+  t.innerHTML = `<span>${isError?'⚠':'✓'}</span><span>${msg}</span>`;
+  stack.appendChild(t);
+  setTimeout(()=>{ t.style.opacity="0"; t.style.transition="opacity .3s"; setTimeout(()=>t.remove(),300); }, 3200);
+}
+
+/* ---------------- AUTH-SCOPED SEQUENTIAL IDS ---------------- */
+async function nextSequence(name, prefix, base){
+  const ref = doc(db, "counters", name);
+  const n = await runTransaction(db, async (tx)=>{
+    const snap = await tx.get(ref);
+    const current = snap.exists() ? snap.data().value : 0;
+    const next = current + 1;
+    tx.set(ref, { value: next }, { merge: true });
+    return next;
+  });
+  return prefix + String((base||0) + n);
+}
+
+/* ---------------- LOGIN / SIGNUP UI ---------------- */
+const tabLogin = document.getElementById("tabLogin");
+const tabSignup = document.getElementById("tabSignup");
+const loginForm = document.getElementById("loginForm");
+const signupForm = document.getElementById("signupForm");
+const loginErr = document.getElementById("loginErr");
+
+tabLogin.onclick = ()=>{
+  tabLogin.classList.add("active"); tabSignup.classList.remove("active");
+  loginForm.style.display=""; signupForm.style.display="none"; loginErr.classList.remove("show");
+};
+tabSignup.onclick = ()=>{
+  tabSignup.classList.add("active"); tabLogin.classList.remove("active");
+  signupForm.style.display=""; loginForm.style.display="none"; loginErr.classList.remove("show");
+};
+
+let selectedLoginRole = "Admin";
+document.getElementById("roleAdmin").onclick = ()=>{
+  selectedLoginRole = "Admin";
+  document.getElementById("roleAdmin").classList.add("active");
+  document.getElementById("roleMember").classList.remove("active");
+};
+document.getElementById("roleMember").onclick = ()=>{
+  selectedLoginRole = "Member";
+  document.getElementById("roleMember").classList.add("active");
+  document.getElementById("roleAdmin").classList.remove("active");
+};
+
+function showAuthError(msg){
+  loginErr.textContent = msg;
+  loginErr.classList.add("show");
+}
+function friendlyAuthError(err){
+  const code = err.code || "";
+  const map = {
+    "auth/invalid-email":"Ye email address sahi format mein nahi hai.",
+    "auth/user-not-found":"Is email se koi account nahi mila.",
+    "auth/wrong-password":"Password galat hai.",
+    "auth/invalid-credential":"Email ya password galat hai.",
+    "auth/email-already-in-use":"Ye email pehle se registered hai — Sign In tab use karein.",
+    "auth/weak-password":"Password kam az kam 6 characters ka hona chahiye.",
+    "auth/too-many-requests":"Bohat zyada attempts ho gaye hain, thodi dair baad try karein.",
+    "auth/network-request-failed":"Internet connection check karein.",
+  };
+  return map[code] || (err.message || "Kuch ghalat ho gaya, dobara koshish karein.");
+}
+
+// When true, the next onAuthStateChanged firing is a result of the user
+// pressing Sign In (not a persisted-session restore), so we enforce that
+// the account's real role (from Firestore) matches the role they picked.
+let interactiveSignIn = false;
+
+document.getElementById("liSubmit").onclick = async ()=>{
+  loginErr.classList.remove("show");
+  const email = document.getElementById("liEmail").value.trim();
+  const pass = document.getElementById("liPassword").value;
+  if(!email || !pass){ showAuthError("Email aur password dono zaroori hain."); return; }
+  const btn = document.getElementById("liSubmit");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Signing in…';
+  try{
+    interactiveSignIn = true;
+    await signInWithEmailAndPassword(auth, email, pass);
+  }catch(err){
+    interactiveSignIn = false;
+    showAuthError(friendlyAuthError(err));
+  }finally{
+    btn.disabled = false; btn.textContent = "Sign In";
+  }
+};
+
+const ADMIN_SETUP_CODE = "Saeed123+";
+
+document.getElementById("suSubmit").onclick = async ()=>{
+  loginErr.classList.remove("show");
+  const setupCode = document.getElementById("suSetupCode").value;
+  const name = document.getElementById("suName").value.trim();
+  const email = document.getElementById("suEmail").value.trim();
+  const pass = document.getElementById("suPassword").value;
+  if(!name || !email || !pass){ showAuthError("Sab fields bharna zaroori hai."); return; }
+  if(setupCode !== ADMIN_SETUP_CODE){ showAuthError("Admin Setup Code ghalat hai. Sirf sahi code se Admin account banaya ja sakta hai."); return; }
+  const btn = document.getElementById("suSubmit");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Creating account…';
+  try{
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: name });
+    await setDoc(doc(db, "users", cred.user.uid), {
+      name, email, role: "Super Admin", createdAt: serverTimestamp(), lastLogin: serverTimestamp()
+    });
+    toast("Account created — welcome!");
+  }catch(err){
+    showAuthError(friendlyAuthError(err));
+  }finally{
+    btn.disabled = false; btn.textContent = "Create Account & Sign In";
+  }
+};
+
+document.getElementById("avatarBtn").onclick = async ()=>{
+  if(confirm("Sign out karna chahte hain?")){
+    await signOut(auth);
+  }
+};
+
+/* ---------------- AUTH STATE ---------------- */
+let currentUser = null;
+let currentUserDoc = null;
+let unsubscribers = [];
+let userDocUnsub = null;
+
+function roleCategory(role){ return role === "Member" ? "Member" : "Admin"; }
+
+onAuthStateChanged(auth, async (user)=>{
+  unsubscribers.forEach(u=>u());
+  unsubscribers = [];
+  if(userDocUnsub){ userDocUnsub(); userDocUnsub = null; }
+
+  if(user){
+    currentUser = user;
+    // ensure user profile doc exists, and know the role BEFORE first render
+    const uRef = doc(db, "users", user.uid);
+    const uSnap = await getDoc(uRef);
+    if(!uSnap.exists()){
+      const fresh = { name: user.displayName || user.email, email: user.email, role: "Super Admin", createdAt: serverTimestamp(), lastLogin: serverTimestamp() };
+      await setDoc(uRef, fresh);
+      currentUserDoc = { ...fresh };
+    } else {
+      currentUserDoc = uSnap.data();
+      await updateDoc(uRef, { lastLogin: serverTimestamp() });
+    }
+
+    // Enforce that an interactive sign-in matches the role the person picked
+    if(interactiveSignIn){
+      interactiveSignIn = false;
+      const actual = roleCategory(currentUserDoc.role);
+      if(actual !== selectedLoginRole){
+        await signOut(auth);
+        showAuthError(actual==="Member"
+          ? "Ye account Member login hai — 'Member' select karke dobara try karein."
+          : "Ye account Admin/Staff login hai — 'Admin' select karke dobara try karein.");
+        return;
+      }
+    }
+
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("app").classList.add("show");
+    setConn("ok", "Connected");
+    document.getElementById("currentRoleLabel").textContent = currentUserDoc.role || "Member";
+    document.getElementById("avatarBtn").textContent = (currentUserDoc.name||user.email||"?").split(" ").map(x=>x[0]).slice(0,2).join("").toUpperCase();
+
+    userDocUnsub = onSnapshot(uRef, (snap)=>{
+      const prevCategory = roleCategory(currentUserDoc?.role);
+      currentUserDoc = snap.data();
+      document.getElementById("currentRoleLabel").textContent = currentUserDoc?.role || "Member";
+      document.getElementById("avatarBtn").textContent = (currentUserDoc?.name||user.email||"?").split(" ").map(x=>x[0]).slice(0,2).join("").toUpperCase();
+      if(roleCategory(currentUserDoc?.role) !== prevCategory){
+        buildSidebar(); navigate("dashboard");
+      }
+    });
+
+    if(roleCategory(currentUserDoc.role) === "Member"){
+      await startMemberListeners();
+    } else {
+      ensureSettingsDoc();
+      startAllListeners();
+    }
+    buildSidebar();
+    navigate("dashboard");
+  } else {
+    currentUser = null;
+    currentUserDoc = null;
+    document.getElementById("app").classList.remove("show");
+    document.getElementById("loginScreen").style.display = "flex";
+    setConn("ok", "Connected — please sign in");
+  }
+});
+
+/* ---------------- FIRESTORE LIVE COLLECTIONS (real data, starts empty) ---------------- */
+let MEMBERS = [], CONTRIBUTIONS = [], EMERGENCY_REQUESTS = [], EDUCATION_APPS = [];
+let PURCHASES = [], INVENTORY = [], SALES = [], DONATIONS = [], EXPENSES = [], USERS_LIST = [];
+let SETTINGS = { orgName:"Family Support Program", emergencyPct:25, businessPct:75, donationPct:5, currency:"PKR", financialYear:"" };
+
+async function ensureSettingsDoc(){
+  const ref = doc(db, "settings", "config");
+  const snap = await getDoc(ref);
+  if(!snap.exists()){
+    await setDoc(ref, SETTINGS);
+  }
+}
+
+function startAllListeners(){
+  const subs = [
+    onSnapshot(query(collection(db,"members"), orderBy("joinDate","desc")), (qs)=>{
+      MEMBERS = qs.docs.map(d=>({ _id:d.id, ...d.data() }));
+      computeInvestPct();
+      if(["dashboard","members","emergency","education","business","profit"].includes(currentPage)) renderPage(currentPage);
+    }, (err)=>{ console.error(err); toast("Members load error: "+err.message, true); }),
+
+    onSnapshot(query(collection(db,"contributions"), orderBy("date","desc")), (qs)=>{
+      CONTRIBUTIONS = qs.docs.map(d=>({ _id:d.id, ...d.data() }));
+      if(["dashboard","contributions","contributions-pending"].includes(currentPage)) renderPage(currentPage);
+    }, (err)=>{ console.error(err); toast("Contributions load error: "+err.message, true); }),
+
+    onSnapshot(collection(db,"emergencyRequests"), (qs)=>{
+      EMERGENCY_REQUESTS = qs.docs.map(d=>({ _id:d.id, ...d.data() }));
+      if(["dashboard","emergency"].includes(currentPage)) renderPage(currentPage);
+    }, (err)=>{ console.error(err); }),
+
+    onSnapshot(collection(db,"educationApplications"), (qs)=>{
+      EDUCATION_APPS = qs.docs.map(d=>({ _id:d.id, ...d.data() }));
+      if(["dashboard","education"].includes(currentPage)) renderPage(currentPage);
+    }, (err)=>{ console.error(err); }),
+
+    onSnapshot(collection(db,"purchases"), (qs)=>{
+      PURCHASES = qs.docs.map(d=>({ _id:d.id, ...d.data() }));
+      if(currentPage==="business") renderPage(currentPage);
+    }, (err)=>{ console.error(err); }),
+
+    onSnapshot(collection(db,"inventory"), (qs)=>{
+      INVENTORY = qs.docs.map(d=>({ _id:d.id, ...d.data() }));
+      if(currentPage==="business") renderPage(currentPage);
+    }, (err)=>{ console.error(err); }),
+
+    onSnapshot(collection(db,"sales"), (qs)=>{
+      SALES = qs.docs.map(d=>({ _id:d.id, ...d.data() }));
+      if(["dashboard","business","profit"].includes(currentPage)) renderPage(currentPage);
+    }, (err)=>{ console.error(err); }),
+
+    onSnapshot(collection(db,"donations"), (qs)=>{
+      DONATIONS = qs.docs.map(d=>({ _id:d.id, ...d.data() }));
+      if(["dashboard","donation"].includes(currentPage)) renderPage(currentPage);
+    }, (err)=>{ console.error(err); }),
+
+    onSnapshot(collection(db,"expenses"), (qs)=>{
+      EXPENSES = qs.docs.map(d=>({ _id:d.id, ...d.data() }));
+      if(["dashboard","expenses","accounting"].includes(currentPage)) renderPage(currentPage);
+    }, (err)=>{ console.error(err); }),
+
+    onSnapshot(collection(db,"users"), (qs)=>{
+      USERS_LIST = qs.docs.map(d=>({ _id:d.id, ...d.data() }));
+      if(currentPage==="users") renderPage(currentPage);
+    }, (err)=>{ console.error(err); }),
+
+    onSnapshot(doc(db,"settings","config"), (snap)=>{
+      if(snap.exists()){
+        SETTINGS = { ...SETTINGS, ...snap.data() };
+        if(currentPage==="settings" || currentPage==="dashboard") renderPage(currentPage);
+      }
+    }, (err)=>{ console.error(err); }),
+  ];
+  unsubscribers.push(...subs);
+}
+
+async function startMemberListeners(){
+  const memberCode = currentUserDoc.memberCode;
+  if(!memberCode){
+    toast("Ye account kisi member record se linked nahi hai. Admin se rabta karein.", true);
+    return;
+  }
+  const subs = [
+    onSnapshot(query(collection(db,"members"), where("memberId","==", memberCode)), (qs)=>{
+      MEMBERS = qs.docs.map(d=>({ _id:d.id, ...d.data() }));
+      computeInvestPct();
+      if(currentPage==="dashboard") renderPage(currentPage);
+    }, (err)=>{ console.error(err); toast("Load error: "+err.message, true); }),
+
+    onSnapshot(query(collection(db,"contributions"), where("memberId","==", memberCode)), (qs)=>{
+      CONTRIBUTIONS = qs.docs.map(d=>({ _id:d.id, ...d.data() })).sort((a,b)=> (b.date||"").localeCompare(a.date||""));
+      if(["dashboard","my-contributions"].includes(currentPage)) renderPage(currentPage);
+    }, (err)=>{ console.error(err); }),
+
+    onSnapshot(query(collection(db,"emergencyRequests"), where("memberId","==", memberCode)), (qs)=>{
+      EMERGENCY_REQUESTS = qs.docs.map(d=>({ _id:d.id, ...d.data() }));
+      if(["dashboard","my-emergency"].includes(currentPage)) renderPage(currentPage);
+    }, (err)=>{ console.error(err); }),
+
+    onSnapshot(query(collection(db,"educationApplications"), where("memberId","==", memberCode)), (qs)=>{
+      EDUCATION_APPS = qs.docs.map(d=>({ _id:d.id, ...d.data() }));
+      if(["dashboard","my-education"].includes(currentPage)) renderPage(currentPage);
+    }, (err)=>{ console.error(err); }),
+
+    onSnapshot(doc(db,"settings","config"), (snap)=>{
+      if(snap.exists()) SETTINGS = { ...SETTINGS, ...snap.data() };
+    }, (err)=>{ console.error(err); }),
+  ];
+  unsubscribers.push(...subs);
+}
+
+function computeInvestPct(){
+  const total = MEMBERS.reduce((s,m)=>s+(m.invested||0),0) || 1;
+  MEMBERS.forEach(m=> m.investPct = +(((m.invested||0)/total)*100).toFixed(2));
+}
+
+function computeKPIs(){
+  const totalMembers = MEMBERS.filter(m=>m.status==="Active").length;
+  const today = todayStr();
+  const todayCollection = CONTRIBUTIONS.filter(c=>c.date===today).reduce((s,c)=>s+(c.amount||0),0);
+  const allTimeCollection = CONTRIBUTIONS.reduce((s,c)=>s+(c.amount||0),0);
+  const emergencyIn = CONTRIBUTIONS.reduce((s,c)=>s+(c.emergencySplit||0),0);
+  const emergencyOut = EMERGENCY_REQUESTS.reduce((s,e)=>s+(e.approved||0),0);
+  const businessFund = MEMBERS.reduce((s,m)=>s+(m.invested||0),0);
+  const eduOut = EDUCATION_APPS.reduce((s,e)=>s+(e.approved||0),0);
+  const donationFund = DONATIONS.reduce((s,d)=>s+(d.amount||0),0);
+  const totalSales = SALES.reduce((s,x)=>s+(x.total||0),0);
+  const totalProfit = SALES.reduce((s,x)=>s+(x.profit||0),0);
+  const totalExpenses = EXPENSES.reduce((s,e)=>s+(e.amount||0),0) + PURCHASES.reduce((s,p)=>s+(p.total||0),0);
+  const cashInHand = allTimeCollection - totalExpenses + totalSales*0.3 - emergencyOut - eduOut;
+  return {
+    totalMembers, todayCollection, allTimeCollection,
+    emergencyFund: emergencyIn - emergencyOut,
+    businessFund, educationalFund: eduOut>0 ? Math.max(0, eduOut*0.2) : 0,
+    donationFund, totalInvestment: businessFund, totalSales, totalProfit, totalExpenses, cashInHand
+  };
+}
+/* ======================================================
+   NAVIGATION
+   ====================================================== */
+function isMemberRole(){ return currentUserDoc && currentUserDoc.role === "Member"; }
+
+const NAV_ADMIN = [
+  {group:"", items:[{id:"dashboard", label:"Dashboard", icon:"◆"}]},
+  {group:"Members", items:[
+    {id:"members", label:"All Members", icon:"◉"},
+    {id:"members-new", label:"New Registration", icon:"＋"},
+  ]},
+  {group:"Contributions", items:[
+    {id:"contributions", label:"All Contributions", icon:"₨"},
+    {id:"contributions-pending", label:"Pending / Missed", icon:"⏳"},
+  ]},
+  {group:"Funds", items:[
+    {id:"emergency", label:"Emergency Fund", icon:"⛑"},
+    {id:"education", label:"Educational Fund", icon:"🎓"},
+    {id:"business", label:"Business Fund", icon:"🏪"},
+    {id:"profit", label:"Profit Distribution", icon:"◷"},
+    {id:"donation", label:"Donation Fund", icon:"❤"},
+  ]},
+  {group:"Finance", items:[
+    {id:"expenses", label:"Expenses", icon:"🧾"},
+    {id:"accounting", label:"Accounting", icon:"⚖"},
+    {id:"reports", label:"Reports", icon:"📊"},
+  ]},
+  {group:"System", items:[
+    {id:"notifications", label:"Notifications", icon:"🔔"},
+    {id:"users", label:"Users & Roles", icon:"🛡"},
+    {id:"settings", label:"Settings", icon:"⚙"},
+  ]},
+];
+
+const NAV_MEMBER = [
+  {group:"", items:[{id:"dashboard", label:"My Dashboard", icon:"◆"}]},
+  {group:"My Records", items:[
+    {id:"my-contributions", label:"My Contributions", icon:"₨"},
+    {id:"my-emergency", label:"Emergency Requests", icon:"⛑"},
+    {id:"my-education", label:"Educational Applications", icon:"🎓"},
+  ]},
+];
+
+let currentPage = "dashboard";
+
+function buildSidebar(){
+  const nav = document.getElementById("navScroll");
+  nav.innerHTML = "";
+  const NAV = isMemberRole() ? NAV_MEMBER : NAV_ADMIN;
+  NAV.forEach(group=>{
+    const g = document.createElement("div");
+    g.className = "nav-group";
+    if(group.group){
+      const lbl = document.createElement("div");
+      lbl.className = "nav-group-label"; lbl.textContent = group.group;
+      g.appendChild(lbl);
+    }
+    group.items.forEach(item=>{
+      const el = document.createElement("div");
+      el.className = "nav-item" + (item.id===currentPage ? " active":"");
+      el.innerHTML = `<span class="ic">${item.icon}</span><span>${item.label}</span>`;
+      el.onclick = ()=> navigate(item.id);
+      g.appendChild(el);
+    });
+    nav.appendChild(g);
+  });
+  // hide admin-only chrome for members
+  document.getElementById("globalSearch").closest(".global-search").style.display = isMemberRole() ? "none" : "";
+}
+
+const PAGE_TITLES = {
+  "dashboard":"Dashboard", "members":"All Members", "members-new":"New Member Registration",
+  "contributions":"Contributions", "contributions-pending":"Pending / Missed Contributions",
+  "emergency":"Emergency Fund", "education":"Educational Fund", "business":"Business Fund",
+  "profit":"Profit Distribution", "donation":"Donation Fund", "expenses":"Expenses",
+  "accounting":"Accounting", "reports":"Reports", "notifications":"Notifications",
+  "users":"Users & Roles", "settings":"Settings",
+  "my-contributions":"My Contributions", "my-emergency":"Emergency Requests", "my-education":"Educational Applications",
+};
+
+function navigate(pageId){
+  if(isMemberRole() && !["dashboard","my-contributions","my-emergency","my-education"].includes(pageId)){
+    pageId = "dashboard";
+  }
+  currentPage = pageId;
+  document.getElementById("pageTitle").textContent = (isMemberRole() && pageId==="dashboard" ? "My Dashboard" : PAGE_TITLES[pageId]) || pageId;
+  buildSidebar();
+  renderPage(pageId);
+  if(window.innerWidth <= 880){ document.getElementById("sidebar").classList.remove("open"); }
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+window.__nav = navigate;
+
+function renderPage(pageId){
+  const c = document.getElementById("content");
+  if(isMemberRole()){
+    const memberRenderers = {
+      "dashboard": renderMemberDashboard,
+      "my-contributions": renderMyContributions,
+      "my-emergency": renderMyEmergency,
+      "my-education": renderMyEducation,
+    };
+    c.innerHTML = "";
+    (memberRenderers[pageId] || renderMemberDashboard)();
+    return;
+  }
+  const renderers = {
+    "dashboard": renderDashboard,
+    "members": renderMembers,
+    "members-new": renderNewMemberForm,
+    "contributions": renderContributions,
+    "contributions-pending": renderPendingContributions,
+    "emergency": renderEmergencyFund,
+    "education": renderEducationFund,
+    "business": renderBusinessFund,
+    "profit": renderProfitDistribution,
+    "donation": renderDonationFund,
+    "expenses": renderExpenses,
+    "accounting": renderAccounting,
+    "reports": renderReports,
+    "notifications": renderNotificationsPage,
+    "users": renderUsers,
+    "settings": renderSettings,
+  };
+  c.innerHTML = "";
+  (renderers[pageId] || renderDashboard)();
+}
+
+function statusTag(status){
+  const map = { "Active":"tag-green","Approved":"tag-green","Paid":"tag-green",
+    "Pending":"tag-amber","Inactive":"tag-red","Rejected":"tag-red","Missed":"tag-red" };
+  return `<span class="tag ${map[status]||'tag-teal'}">${status}</span>`;
+}
+function emptyState(icon, title, sub){
+  return `<div class="empty"><div class="e-ic">${icon}</div><div class="e-title">${title}</div><div>${sub}</div></div>`;
+}
+function rowHTML(icon, title, sub, right){
+  return `<div class="list-row"><div class="dot-ic">${icon}</div><div><div class="lr-title">${title}</div><div class="lr-sub">${sub}</div></div><div class="lr-right mono">${right}</div></div>`;
+}
+
+/* ---------------- Generic table page renderer ---------------- */
+function renderTablePage({title, desc, addLabel, onAdd, columns, rows, emptyIcon, emptyTitle, emptySub}){
+  const c = document.getElementById("content");
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <div class="section-head">
+      <div><h2>${title}</h2><div class="desc">${desc}</div></div>
+      ${addLabel ? `<button class="btn btn-primary" id="tblAddBtn">${addLabel}</button>` : ""}
+    </div>
+    ${rows.length ? `
+    <div class="toolbar"><input type="text" id="tblFilter" placeholder="Filter this list…" style="min-width:220px;"><div class="spacer"></div></div>
+    <div class="table-wrap"><table id="tblMain">
+      <thead><tr>${columns.map(h=>`<th>${h}</th>`).join("")}</tr></thead>
+      <tbody>${rows.map(r=>`<tr>${r.map(cell=>`<td>${cell}</td>`).join("")}</tr>`).join("")}</tbody>
+    </table></div>` : `<div class="card">${emptyState(emptyIcon||"📭", emptyTitle||"No records yet", emptySub||"Data you add will appear here in real time.")}</div>`}
+  `;
+  c.appendChild(wrap);
+  if(onAdd) document.getElementById("tblAddBtn").onclick = onAdd;
+  const filter = document.getElementById("tblFilter");
+  if(filter){
+    filter.addEventListener("input", (e)=>{
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll("#tblMain tbody tr").forEach(tr=>{
+        tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
+      });
+    });
+  }
+}
+
+/* ---------------- DASHBOARD ---------------- */
+function renderDashboard(){
+  const c = document.getElementById("content");
+  const k = computeKPIs();
+  const cards = [
+    {label:"Total Members", value:k.totalMembers, sub:"Active members", bar:"var(--teal-700)"},
+    {label:"Today's Collection", value:fmt(k.todayCollection), sub:"Received today", bar:"var(--gold)"},
+    {label:"All-Time Collection", value:fmt(k.allTimeCollection), sub:"Since inception", bar:"var(--teal-700)"},
+    {label:"Emergency Fund", value:fmt(Math.max(k.emergencyFund,0)), sub:"Available balance", bar:"var(--danger)"},
+    {label:"Business Fund", value:fmt(k.businessFund), sub:"Member capital pool", bar:"var(--success)"},
+    {label:"Educational Fund", value:fmt(Math.max(k.educationalFund,0)), sub:"Available balance", bar:"var(--teal-600)"},
+    {label:"Donation Fund", value:fmt(k.donationFund), sub:"Received to date", bar:"var(--gold)"},
+    {label:"Total Investment", value:fmt(k.totalInvestment), sub:"By all members", bar:"var(--teal-700)"},
+    {label:"Total Sales", value:fmt(k.totalSales), sub:"Business Fund sales", bar:"var(--success)"},
+    {label:"Total Profit", value:fmt(k.totalProfit), sub:"Before donation cut", bar:"var(--gold)"},
+    {label:"Total Expenses", value:fmt(k.totalExpenses), sub:"Purchases + operating", bar:"var(--danger)"},
+    {label:"Cash in Hand", value:fmt(Math.max(k.cashInHand,0)), sub:"Estimated liquid cash", bar:"var(--teal-800)"},
+  ];
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <div class="section-head">
+      <div><h2>Welcome back${currentUserDoc && currentUserDoc.name? ", "+currentUserDoc.name.split(" ")[0]:""}</h2>
+      <div class="desc">Live data from your Firebase project — updates in real time.</div></div>
+    </div>`;
+  const kpiGrid = document.createElement("div");
+  kpiGrid.className = "kpi-grid";
+  cards.forEach(card=>{
+    const el = document.createElement("div");
+    el.className = "kpi"; el.style.setProperty("--bar", card.bar);
+    el.innerHTML = `<div class="k-label">${card.label}</div><div class="k-value">${card.value}</div><div class="k-sub">${card.sub}</div>`;
+    kpiGrid.appendChild(el);
+  });
+  wrap.appendChild(kpiGrid);
+
+  const pendingCount = EMERGENCY_REQUESTS.filter(e=>e.status==="Pending").length + EDUCATION_APPS.filter(e=>e.status==="Pending").length;
+  document.getElementById("bellDot").classList.toggle("show", pendingCount>0);
+
+  const two = document.createElement("div");
+  two.className = "two-col";
+  const left = document.createElement("div");
+  left.className = "card list-card";
+  left.innerHTML = `<div class="card-title">Pending Approvals <span class="tag tag-amber">${pendingCount} open</span></div>`;
+  if(pendingCount===0){
+    left.innerHTML += `<div style="padding:6px;">${emptyState("✓","All caught up","No pending Emergency or Educational requests.")}</div>`;
+  } else {
+    EMERGENCY_REQUESTS.filter(e=>e.status==="Pending").forEach(e=>{ left.innerHTML += rowHTML("⛑", `${e.memberName} — Emergency`, e.reason, fmt(e.requested)); });
+    EDUCATION_APPS.filter(e=>e.status==="Pending").forEach(e=>{ left.innerHTML += rowHTML("🎓", `${e.memberName} — Education`, e.institution, fmt(e.fee)); });
+  }
+  two.appendChild(left);
+
+  const right = document.createElement("div");
+  right.className = "card list-card";
+  right.innerHTML = `<div class="card-title">Recent Contributions</div>`;
+  if(CONTRIBUTIONS.length===0){
+    right.innerHTML += `<div style="padding:6px;">${emptyState("₨","No contributions yet","Add the first contribution to see it here.")}</div>`;
+  } else {
+    CONTRIBUTIONS.slice(0,5).forEach(cn=> right.innerHTML += rowHTML("₨", cn.memberName, cn.date+" · "+cn.method, fmt(cn.amount)));
+  }
+  two.appendChild(right);
+  wrap.appendChild(two);
+
+  const quick = document.createElement("div");
+  quick.className = "card"; quick.style.marginTop = "16px"; quick.style.padding = "16px";
+  quick.innerHTML = `<div class="card-title" style="padding:0 0 12px; border:none;">Quick Actions</div>
+    <div class="chip-row" style="margin-bottom:0;">
+      <button class="chip" onclick="window.__nav('members-new')">＋ New Member</button>
+      <button class="chip" onclick="window.__openContribModal()">₨ Add Contribution</button>
+      <button class="chip" onclick="window.__nav('emergency')">⛑ Emergency Request</button>
+      <button class="chip" onclick="window.__nav('education')">🎓 Education Application</button>
+      <button class="chip" onclick="window.__nav('reports')">📊 View Reports</button>
+    </div>`;
+  wrap.appendChild(quick);
+  c.appendChild(wrap);
+}
+
+/* ======================================================
+   MEMBER-SCOPED PAGES (role: Member — own data only)
+   ====================================================== */
+function ownMember(){ return MEMBERS.find(m=>m.memberId === currentUserDoc.memberCode) || MEMBERS[0]; }
+
+function renderMemberDashboard(){
+  const c = document.getElementById("content");
+  const m = ownMember();
+  const wrap = document.createElement("div");
+  if(!m){
+    wrap.innerHTML = `<div class="card">${emptyState("👤","Profile not found","Aapka account kisi member record se link nahi ho saka. Admin se rabta karein.")}</div>`;
+    c.appendChild(wrap); return;
+  }
+  const myContrib = CONTRIBUTIONS.reduce((s,cn)=>s+(cn.amount||0),0);
+  const myEmergencyApproved = EMERGENCY_REQUESTS.filter(e=>e.status==="Approved").reduce((s,e)=>s+(e.approved||0),0);
+  const myEduApproved = EDUCATION_APPS.filter(e=>e.status==="Approved").reduce((s,e)=>s+(e.approved||0),0);
+  wrap.innerHTML = `
+    <div class="section-head"><div><h2>Welcome, ${m.name.split(" ")[0]}</h2><div class="desc">Your personal Family Support Program overview.</div></div></div>
+    <div class="card" style="padding:20px; margin-bottom:18px;">
+      <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+        <div class="avatar" style="width:56px; height:56px; font-size:18px;">${m.name.split(" ").map(x=>x[0]).slice(0,2).join("").toUpperCase()}</div>
+        <div>
+          <div style="font-family:var(--font-display); font-size:18px; font-weight:600; color:var(--teal-900);">${m.name}</div>
+          <div class="mono" style="font-size:12px; color:var(--muted);">${m.memberId} · ${m.category||"—"} · Policy ${m.policy}</div>
+        </div>
+        <div style="margin-left:auto;">${statusTag(m.status||"Active")}</div>
+      </div>
+    </div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
+      <div class="kpi" style="--bar:var(--gold)"><div class="k-label">My Total Contributions</div><div class="k-value">${fmt(myContrib)}</div></div>
+      <div class="kpi" style="--bar:var(--success)"><div class="k-label">Business Fund Share</div><div class="k-value">${fmt(m.invested||0)}</div><div class="k-sub">${m.investPct||0}% of pool</div></div>
+      <div class="kpi" style="--bar:var(--danger)"><div class="k-label">Emergency Aid Received</div><div class="k-value">${fmt(myEmergencyApproved)}</div></div>
+    </div>
+    <div class="chip-row" style="margin-top:6px;">
+      <button class="chip" onclick="window.__nav('my-contributions')">₨ My Contributions</button>
+      <button class="chip" onclick="window.__nav('my-emergency')">⛑ Emergency Requests</button>
+      <button class="chip" onclick="window.__nav('my-education')">🎓 Educational Applications</button>
+    </div>`;
+  c.appendChild(wrap);
+}
+
+function renderMyContributions(){
+  renderTablePage({
+    title:"My Contributions", desc:"Your contribution history",
+    columns:["Receipt #","Amount","Method","Date"],
+    rows: CONTRIBUTIONS.map(cn=>[`<span class="mono">${cn.receiptNo}</span>`, fmt(cn.amount), cn.method, cn.date]),
+    emptyIcon:"₨", emptyTitle:"No contributions yet", emptySub:"Your recorded contributions will appear here.",
+  });
+}
+
+function renderMyEmergency(){
+  const c = document.getElementById("content");
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `<div class="section-head"><div><h2>Emergency Requests</h2><div class="desc">Your emergency assistance requests.</div></div>
+  <button class="btn btn-primary" id="myEmrBtn">＋ New Request</button></div>`;
+  wrap.innerHTML += EMERGENCY_REQUESTS.length===0
+    ? `<div class="card">${emptyState("⛑","No requests yet","Submit a request if you need emergency assistance.")}</div>`
+    : `<div class="table-wrap"><table><thead><tr><th>Reason</th><th>Requested</th><th>Approved</th><th>Status</th><th>Date</th></tr></thead>
+       <tbody>${EMERGENCY_REQUESTS.map(e=>`<tr><td>${e.reason}</td><td>${fmt(e.requested)}</td><td>${e.approved?fmt(e.approved):'—'}</td><td>${statusTag(e.status)}</td><td>${e.date}</td></tr>`).join("")}</tbody></table></div>`;
+  c.appendChild(wrap);
+  document.getElementById("myEmrBtn").onclick = ()=>{
+    const m = ownMember();
+    openModal("New Emergency Fund Request", `
+      <div class="field"><label>Reason</label><input type="text" id="myEmrReason" placeholder="e.g. Medical Emergency"></div>
+      <div class="field"><label>Amount Requested</label><input type="number" id="myEmrAmount"></div>
+    `, [
+      {label:"Cancel", cls:"btn-ghost", action:closeModal},
+      {label:"Submit Request", cls:"btn-primary", action: async ()=>{
+        try{
+          const reqId = await nextSequence("emergency","EMR-",100);
+          await addDoc(collection(db,"emergencyRequests"), {
+            reqId, memberId: m.memberId, memberName: m.name, reason: document.getElementById("myEmrReason").value||"—",
+            requested: +document.getElementById("myEmrAmount").value||0, approved:0, status:"Pending", date: todayStr(), approver:"—", createdAt: serverTimestamp(),
+          });
+          closeModal(); toast("Request submitted for approval");
+        }catch(err){ toast("Save failed: "+err.message, true); }
+      }}
+    ]);
+  };
+}
+
+function renderMyEducation(){
+  const c = document.getElementById("content");
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `<div class="section-head"><div><h2>Educational Applications</h2><div class="desc">Your educational aid applications.</div></div>
+  <button class="btn btn-primary" id="myEduBtn">＋ New Application</button></div>`;
+  wrap.innerHTML += EDUCATION_APPS.length===0
+    ? `<div class="card">${emptyState("🎓","No applications yet","Submit an application if you need educational assistance.")}</div>`
+    : `<div class="table-wrap"><table><thead><tr><th>Student</th><th>Institution</th><th>Fee</th><th>Approved</th><th>Status</th></tr></thead>
+       <tbody>${EDUCATION_APPS.map(e=>`<tr><td>${e.student}</td><td>${e.institution}</td><td>${fmt(e.fee)}</td><td>${e.approved?fmt(e.approved):'—'}</td><td>${statusTag(e.status)}</td></tr>`).join("")}</tbody></table></div>`;
+  c.appendChild(wrap);
+  document.getElementById("myEduBtn").onclick = ()=>{
+    const m = ownMember();
+    openModal("New Educational Fund Application", `
+      <div class="field"><label>Student Name</label><input type="text" id="myEduStudent"></div>
+      <div class="field"><label>Institution</label><input type="text" id="myEduInst"></div>
+      <div class="field"><label>Fee Amount</label><input type="number" id="myEduFee"></div>
+    `, [
+      {label:"Cancel", cls:"btn-ghost", action:closeModal},
+      {label:"Submit Application", cls:"btn-primary", action: async ()=>{
+        try{
+          const appId = await nextSequence("education","EDU-",50);
+          await addDoc(collection(db,"educationApplications"), {
+            appId, memberId: m.memberId, memberName: m.name, student: document.getElementById("myEduStudent").value||"—",
+            institution: document.getElementById("myEduInst").value||"—", fee: +document.getElementById("myEduFee").value||0,
+            approved:0, status:"Pending", installments:"—", createdAt: serverTimestamp(),
+          });
+          closeModal(); toast("Application submitted");
+        }catch(err){ toast("Save failed: "+err.message, true); }
+      }}
+    ]);
+  };
+}
+
+/* ---------------- MEMBERS (Admin) ---------------- */
+/* ---------------- helper: create a login account for a member ---------------- */
+async function createMemberLogin(memberDocId, memberCode, name, email, password){
+  const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+  await updateProfile(cred.user, { displayName: name });
+  await setDoc(doc(db, "users", cred.user.uid), {
+    name, email, role: "Member", memberCode, createdAt: serverTimestamp(), lastLogin: serverTimestamp()
+  });
+  await updateDoc(doc(db,"members", memberDocId), { loginEmail: email, authUid: cred.user.uid });
+  await signOut(secondaryAuth);
+}
+
+function renderMembers(){
+  const c = document.getElementById("content");
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <div class="section-head">
+      <div><h2>All Members</h2><div class="desc">${MEMBERS.length} registered member(s)</div></div>
+      <button class="btn btn-primary" id="tblAddBtn">＋ New Member</button>
+    </div>`;
+  if(MEMBERS.length===0){
+    wrap.innerHTML += `<div class="card">${emptyState("◉","No members yet","Register your first member to get started.")}</div>`;
+  } else {
+    wrap.innerHTML += `
+    <div class="toolbar"><input type="text" id="tblFilter" placeholder="Filter this list…" style="min-width:220px;"><div class="spacer"></div></div>
+    <div class="table-wrap"><table id="tblMain">
+      <thead><tr><th>Member ID</th><th>Name</th><th>CNIC</th><th>Mobile</th><th>Policy</th><th>Status</th><th>App Login</th><th>Actions</th></tr></thead>
+      <tbody>${MEMBERS.map(m=>`<tr>
+        <td class="mono">${m.memberId||"—"}</td><td>${m.name||"—"}</td><td class="mono">${m.cnic||"—"}</td><td class="mono">${m.mobile||"—"}</td>
+        <td>${m.policy||"—"}</td><td>${statusTag(m.status||"Active")}</td>
+        <td>${m.authUid ? `<span class="tag tag-green">Active</span>` : `<span class="tag tag-amber">Not set</span>`}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="window.__editMember('${m._id}')">Edit</button></td>
+      </tr>`).join("")}</tbody>
+    </table></div>`;
+  }
+  c.appendChild(wrap);
+  document.getElementById("tblAddBtn").onclick = ()=>navigate("members-new");
+  const filter = document.getElementById("tblFilter");
+  if(filter){
+    filter.addEventListener("input", (e)=>{
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll("#tblMain tbody tr").forEach(tr=>{
+        tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
+      });
+    });
+  }
+}
+
+/* login-access fields shared by New/Edit member forms */
+function loginFieldsHTML(prefix, existingEmail){
+  if(existingEmail){
+    return `<div class="field"><label>App Login</label>
+      <div style="padding:10px 12px; background:var(--parchment-dim); border-radius:8px; font-size:12.5px;">✓ Login active — <span class="mono">${existingEmail}</span></div></div>`;
+  }
+  return `
+    <div class="field">
+      <label><input type="checkbox" id="${prefix}GiveLogin" style="width:auto; margin-right:6px;"> Give this member app login access</label>
+    </div>
+    <div id="${prefix}LoginFields" style="display:none;">
+      <div class="field"><label>Login Email</label><input type="email" id="${prefix}LoginEmail" placeholder="member@email.com"></div>
+      <div class="field"><label>Login Password</label><input type="password" id="${prefix}LoginPass" placeholder="min 6 characters"></div>
+    </div>`;
+}
+function wireLoginToggle(prefix){
+  const chk = document.getElementById(prefix+"GiveLogin");
+  if(chk){
+    chk.addEventListener("change", ()=>{
+      document.getElementById(prefix+"LoginFields").style.display = chk.checked ? "" : "none";
+    });
+  }
+}
+
+function renderNewMemberForm(){
+  const c = document.getElementById("content");
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <div class="section-head"><div><h2>New Member Registration</h2><div class="desc">Member ID is generated automatically and saved to Firestore.</div></div></div>
+    <div class="card" style="padding:22px; max-width:640px;">
+      <div class="field"><label>Full Name</label><input type="text" id="nmName" placeholder="e.g. Muhammad Bilal"></div>
+      <div class="field"><label>CNIC</label><input type="text" id="nmCnic" placeholder="35201-1234567-1"></div>
+      <div class="field"><label>Mobile Number</label><input type="text" id="nmMobile" placeholder="0300-1234567"></div>
+      <div class="field"><label>Address</label><input type="text" id="nmAddress" placeholder="City, area"></div>
+      <div class="field"><label>Policy</label>
+        <select id="nmPolicy"><option value="25">25</option><option value="75">75</option><option value="100" selected>100</option></select>
+      </div>
+      <div class="field"><label>Join Date</label><input type="date" id="nmDate" value="${todayStr()}"></div>
+      ${loginFieldsHTML("nm")}
+      <div style="display:flex; gap:10px; margin-top:6px;">
+        <button class="btn btn-primary" id="nmSave">Save Member</button>
+        <button class="btn btn-ghost" onclick="window.__nav('members')">Cancel</button>
+      </div>
+    </div>`;
+  c.appendChild(wrap);
+  wireLoginToggle("nm");
+  document.getElementById("nmSave").onclick = async ()=>{
+    const name = document.getElementById("nmName").value.trim();
+    if(!name){ toast("Member ka naam likhna zaroori hai", true); return; }
+    const giveLogin = document.getElementById("nmGiveLogin").checked;
+    const loginEmail = document.getElementById("nmLoginEmail").value.trim();
+    const loginPass = document.getElementById("nmLoginPass").value;
+    if(giveLogin && (!loginEmail || !loginPass || loginPass.length<6)){
+      toast("Login ke liye valid email aur kam az kam 6-character password zaroori hai", true); return;
+    }
+    const btn = document.getElementById("nmSave");
+    btn.disabled = true; btn.innerHTML = '<span class="spinner" style="border-top-color:var(--teal-800); border-color:rgba(22,56,50,0.3);"></span> Saving…';
+    try{
+      const memberId = await nextSequence("members", "FSP-", 1000);
+      const policy = +document.getElementById("nmPolicy").value;
+      const ref = await addDoc(collection(db,"members"), {
+        memberId, name,
+        cnic: document.getElementById("nmCnic").value || "—",
+        mobile: document.getElementById("nmMobile").value || "—",
+        address: document.getElementById("nmAddress").value || "—",
+        policy, joinDate: document.getElementById("nmDate").value || todayStr(),
+        status:"Active", category: policy===100?"Premium":policy===75?"Standard":"Basic",
+        invested:0, investPct:0, createdAt: serverTimestamp(),
+      });
+      if(giveLogin){
+        try{
+          await createMemberLogin(ref.id, memberId, name, loginEmail, loginPass);
+          toast(`Member ${name} registered as ${memberId} — login access created`);
+        }catch(loginErr){
+          toast(`Member saved, lekin login create nahi ho saka: ${friendlyAuthError(loginErr)}`, true);
+        }
+      } else {
+        toast(`Member ${name} registered as ${memberId}`);
+      }
+      navigate("members");
+    }catch(err){
+      toast("Save failed: "+err.message, true);
+      btn.disabled = false; btn.textContent = "Save Member";
+    }
+  };
+}
+
+/* ---------------- EDIT MEMBER (Admin) ---------------- */
+window.__editMember = (docId)=>{
+  const m = MEMBERS.find(x=>x._id===docId);
+  if(!m) return;
+  openModal(`Edit Member — ${m.memberId}`, `
+    <div class="field"><label>Full Name</label><input type="text" id="emName" value="${(m.name||"").replace(/"/g,'&quot;')}"></div>
+    <div class="field"><label>CNIC</label><input type="text" id="emCnic" value="${(m.cnic||"").replace(/"/g,'&quot;')}"></div>
+    <div class="field"><label>Mobile Number</label><input type="text" id="emMobile" value="${(m.mobile||"").replace(/"/g,'&quot;')}"></div>
+    <div class="field"><label>Address</label><input type="text" id="emAddress" value="${(m.address||"").replace(/"/g,'&quot;')}"></div>
+    <div class="field"><label>Policy</label>
+      <select id="emPolicy">
+        <option value="25" ${m.policy==25?'selected':''}>25</option>
+        <option value="75" ${m.policy==75?'selected':''}>75</option>
+        <option value="100" ${m.policy==100?'selected':''}>100</option>
+      </select>
+    </div>
+    <div class="field"><label>Status</label>
+      <select id="emStatus"><option ${m.status==="Active"?'selected':''}>Active</option><option ${m.status==="Inactive"?'selected':''}>Inactive</option></select>
+    </div>
+    ${loginFieldsHTML("em", m.loginEmail)}
+  `, [
+    {label:"Cancel", cls:"btn-ghost", action:closeModal},
+    {label:"Save Changes", cls:"btn-primary", action: async ()=>{
+      const policy = +document.getElementById("emPolicy").value;
+      try{
+        await updateDoc(doc(db,"members", m._id), {
+          name: document.getElementById("emName").value.trim() || m.name,
+          cnic: document.getElementById("emCnic").value || "—",
+          mobile: document.getElementById("emMobile").value || "—",
+          address: document.getElementById("emAddress").value || "—",
+          policy, category: policy===100?"Premium":policy===75?"Standard":"Basic",
+          status: document.getElementById("emStatus").value,
+        });
+        if(!m.loginEmail){
+          const giveLogin = document.getElementById("emGiveLogin")?.checked;
+          if(giveLogin){
+            const loginEmail = document.getElementById("emLoginEmail").value.trim();
+            const loginPass = document.getElementById("emLoginPass").value;
+            if(loginEmail && loginPass && loginPass.length>=6){
+              try{
+                await createMemberLogin(m._id, m.memberId, document.getElementById("emName").value.trim()||m.name, loginEmail, loginPass);
+                toast("Login access created for this member");
+              }catch(loginErr){
+                toast("Member updated, lekin login create nahi ho saka: "+friendlyAuthError(loginErr), true);
+              }
+            } else {
+              toast("Login ke liye valid email aur kam az kam 6-character password zaroori hai", true);
+            }
+          }
+        }
+        closeModal();
+        toast("Member updated");
+      }catch(err){ toast("Update failed: "+err.message, true); }
+    }}
+  ]);
+  wireLoginToggle("em");
+};
+
+/* ---------------- CONTRIBUTIONS ---------------- */
+function renderContributions(){
+  renderTablePage({
+    title:"Contribution History", desc:"All recorded member contributions",
+    addLabel:"＋ Add Contribution", onAdd:()=>openContributionModal(),
+    columns:["Receipt #","Member","Amount","Method","Emergency","Business","Date"],
+    rows: CONTRIBUTIONS.map(cn=>[
+      `<span class="mono">${cn.receiptNo}</span>`, `${cn.memberName} <span class="mono" style="color:var(--muted)">(${cn.memberId})</span>`,
+      fmt(cn.amount), cn.method, fmt(cn.emergencySplit), fmt(cn.businessSplit), cn.date
+    ]),
+    emptyIcon:"₨", emptyTitle:"No contributions yet", emptySub:"Add a contribution to start building the ledger.",
+  });
+}
+
+function renderPendingContributions(){
+  const c = document.getElementById("content");
+  const paidThisMonth = new Set(CONTRIBUTIONS.filter(cn=>cn.date && cn.date.startsWith(todayStr().slice(0,7))).map(cn=>cn.memberId));
+  const missed = MEMBERS.filter(m=> m.status==="Active" && !paidThisMonth.has(m.memberId));
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `<div class="section-head"><div><h2>Pending &amp; Missed Contributions</h2><div class="desc">Active members who haven't contributed this month.</div></div></div>`;
+  if(missed.length===0){
+    wrap.innerHTML += `<div class="card">${emptyState("✓","Nothing missed","Every active member has contributed this month, or no members are registered yet.")}</div>`;
+  } else {
+    wrap.innerHTML += `<div class="table-wrap"><table><thead><tr><th>Member ID</th><th>Name</th><th>Policy</th><th>Expected</th><th>Status</th></tr></thead>
+    <tbody>${missed.map(m=>`<tr><td class="mono">${m.memberId}</td><td>${m.name}</td><td>${m.policy}</td><td>${fmt(m.policy)}</td><td>${statusTag("Missed")}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  c.appendChild(wrap);
+}
+
+/* ---------------- ADD CONTRIBUTION MODAL ---------------- */
+function openContributionModal(){
+  if(MEMBERS.length===0){ toast("Pehle kam az kam ek member register karein", true); return; }
+  openModal("Add Contribution", `
+    <div class="field"><label>Member</label><select id="cbMember">${MEMBERS.map(m=>`<option value="${m._id}">${m.name} (${m.memberId}) — Policy ${m.policy}</option>`).join("")}</select></div>
+    <div class="field"><label>Amount</label><input type="number" id="cbAmount" value="${MEMBERS[0].policy}"></div>
+    <div class="field"><label>Payment Method</label><select id="cbMethod"><option>Cash</option><option>Bank Transfer</option><option>Mobile Wallet</option></select></div>
+    <div class="field"><label>Notes (optional)</label><textarea id="cbNotes" rows="2"></textarea></div>
+    <div style="font-size:11.5px; color:var(--muted);">On save: ${SETTINGS.emergencyPct}% routes to Emergency Fund, ${SETTINGS.businessPct}% to Business Fund.</div>
+  `, [
+    {label:"Cancel", cls:"btn-ghost", action:closeModal},
+    {label:"Save & Generate Receipt", cls:"btn-primary", action: async ()=>{
+      const docId = document.getElementById("cbMember").value;
+      const m = MEMBERS.find(x=>x._id===docId);
+      const amt = +document.getElementById("cbAmount").value || m.policy;
+      try{
+        const receiptNo = await nextSequence("receipts", "RCT-", 5000);
+        await addDoc(collection(db,"contributions"), {
+          receiptNo, memberId: m.memberId, memberName: m.name, amount: amt,
+          method: document.getElementById("cbMethod").value, date: todayStr(),
+          emergencySplit: +(amt*SETTINGS.emergencyPct/100).toFixed(0),
+          businessSplit: +(amt*SETTINGS.businessPct/100).toFixed(0),
+          notes: document.getElementById("cbNotes").value, createdAt: serverTimestamp(),
+        });
+        await updateDoc(doc(db,"members", m._id), { invested: (m.invested||0) + (+(amt*SETTINGS.businessPct/100).toFixed(0)) });
+        closeModal();
+        toast(`Contribution recorded — Receipt ${receiptNo}`);
+      }catch(err){ toast("Save failed: "+err.message, true); }
+    }}
+  ]);
+  document.getElementById("cbMember").addEventListener("change",(e)=>{
+    const m = MEMBERS.find(x=>x._id===e.target.value);
+    if(m) document.getElementById("cbAmount").value = m.policy;
+  });
+}
+window.__openContribModal = openContributionModal;
+
+/* ---------------- EMERGENCY FUND ---------------- */
+function renderEmergencyFund(){
+  const c = document.getElementById("content");
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <div class="section-head">
+      <div><h2>Emergency Fund</h2><div class="desc">${SETTINGS.emergencyPct}% of every contribution auto-routes here.</div></div>
+      <button class="btn btn-primary" id="emrNewBtn">＋ New Request</button>
+    </div>`;
+  if(EMERGENCY_REQUESTS.length===0){
+    wrap.innerHTML += `<div class="card">${emptyState("⛑","No emergency requests yet","Submitted requests will appear here for approval.")}</div>`;
+  } else {
+    wrap.innerHTML += `<div class="table-wrap"><table><thead><tr><th>Request #</th><th>Member</th><th>Reason</th><th>Requested</th><th>Approved</th><th>Status</th><th>Date</th><th></th></tr></thead>
+    <tbody>${EMERGENCY_REQUESTS.map(e=>`<tr><td class="mono">${e.reqId||e._id.slice(0,6)}</td><td>${e.memberName}</td><td>${e.reason}</td><td>${fmt(e.requested)}</td><td>${e.approved?fmt(e.approved):'—'}</td><td>${statusTag(e.status)}</td><td>${e.date}</td>
+    <td>${e.status==="Pending"?`<button class="btn btn-sm btn-ghost" onclick="window.__approveEmr('${e._id}',${e.requested})">Approve</button> <button class="btn btn-sm btn-ghost" onclick="window.__rejectEmr('${e._id}')">Reject</button>`:''}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  c.appendChild(wrap);
+  document.getElementById("emrNewBtn").onclick = ()=>{
+    if(MEMBERS.length===0){ toast("Pehle kam az kam ek member register karein", true); return; }
+    openModal("New Emergency Fund Request", `
+      <div class="field"><label>Member</label><select id="emrMember">${MEMBERS.map(m=>`<option value="${m._id}">${m.name} (${m.memberId})</option>`).join("")}</select></div>
+      <div class="field"><label>Reason</label><input type="text" id="emrReason" placeholder="e.g. Medical Emergency"></div>
+      <div class="field"><label>Amount Requested</label><input type="number" id="emrAmount" placeholder="e.g. 30000"></div>
+    `, [
+      {label:"Cancel", cls:"btn-ghost", action:closeModal},
+      {label:"Submit Request", cls:"btn-primary", action: async ()=>{
+        const m = MEMBERS.find(x=>x._id===document.getElementById("emrMember").value);
+        const amt = +document.getElementById("emrAmount").value || 0;
+        try{
+          const reqId = await nextSequence("emergency","EMR-",100);
+          await addDoc(collection(db,"emergencyRequests"), {
+            reqId, memberId: m.memberId, memberName: m.name, reason: document.getElementById("emrReason").value||"—",
+            requested: amt, approved: 0, status:"Pending", date: todayStr(), approver:"—", createdAt: serverTimestamp(),
+          });
+          closeModal(); toast("Emergency request submitted for approval");
+        }catch(err){ toast("Save failed: "+err.message, true); }
+      }}
+    ]);
+  };
+}
+window.__approveEmr = async (id, amount)=>{
+  try{
+    await updateDoc(doc(db,"emergencyRequests", id), { status:"Approved", approved: amount, approver: currentUserDoc?.name || "Admin" });
+    toast("Request approved");
+  }catch(err){ toast("Failed: "+err.message, true); }
+};
+window.__rejectEmr = async (id)=>{
+  try{
+    await updateDoc(doc(db,"emergencyRequests", id), { status:"Rejected", approved:0, approver: currentUserDoc?.name || "Admin" });
+    toast("Request rejected");
+  }catch(err){ toast("Failed: "+err.message, true); }
+};
+
+/* ---------------- EDUCATIONAL FUND ---------------- */
+function renderEducationFund(){
+  const c = document.getElementById("content");
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <div class="section-head">
+      <div><h2>Educational Fund</h2><div class="desc">Assistance for members' children's education.</div></div>
+      <button class="btn btn-primary" id="eduNewBtn">＋ New Application</button>
+    </div>`;
+  if(EDUCATION_APPS.length===0){
+    wrap.innerHTML += `<div class="card">${emptyState("🎓","No applications yet","Submitted educational aid applications will appear here.")}</div>`;
+  } else {
+    wrap.innerHTML += `<div class="table-wrap"><table><thead><tr><th>App #</th><th>Member</th><th>Student</th><th>Institution</th><th>Fee</th><th>Approved</th><th>Status</th><th></th></tr></thead>
+    <tbody>${EDUCATION_APPS.map(e=>`<tr><td class="mono">${e.appId||e._id.slice(0,6)}</td><td>${e.memberName}</td><td>${e.student}</td><td>${e.institution}</td><td>${fmt(e.fee)}</td><td>${e.approved?fmt(e.approved):'—'}</td><td>${statusTag(e.status)}</td>
+    <td>${e.status==="Pending"?`<button class="btn btn-sm btn-ghost" onclick="window.__approveEdu('${e._id}',${e.fee})">Approve</button>`:''}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  c.appendChild(wrap);
+  document.getElementById("eduNewBtn").onclick = ()=>{
+    if(MEMBERS.length===0){ toast("Pehle kam az kam ek member register karein", true); return; }
+    openModal("New Educational Fund Application", `
+      <div class="field"><label>Member</label><select id="eduMember">${MEMBERS.map(m=>`<option value="${m._id}">${m.name} (${m.memberId})</option>`).join("")}</select></div>
+      <div class="field"><label>Student Name</label><input type="text" id="eduStudent"></div>
+      <div class="field"><label>Institution</label><input type="text" id="eduInst"></div>
+      <div class="field"><label>Fee Amount</label><input type="number" id="eduFee"></div>
+    `, [
+      {label:"Cancel", cls:"btn-ghost", action:closeModal},
+      {label:"Submit Application", cls:"btn-primary", action: async ()=>{
+        const m = MEMBERS.find(x=>x._id===document.getElementById("eduMember").value);
+        try{
+          const appId = await nextSequence("education","EDU-",50);
+          await addDoc(collection(db,"educationApplications"), {
+            appId, memberId: m.memberId, memberName: m.name, student: document.getElementById("eduStudent").value||"—",
+            institution: document.getElementById("eduInst").value||"—", fee: +document.getElementById("eduFee").value||0,
+            approved:0, status:"Pending", installments:"—", createdAt: serverTimestamp(),
+          });
+          closeModal(); toast("Educational application submitted");
+        }catch(err){ toast("Save failed: "+err.message, true); }
+      }}
+    ]);
+  };
+}
+window.__approveEdu = async (id, fee)=>{
+  try{
+    await updateDoc(doc(db,"educationApplications", id), { status:"Approved", approved: fee, installments:"1 of 1 paid" });
+    toast("Application approved");
+  }catch(err){ toast("Failed: "+err.message, true); }
+};
+
+/* ---------------- BUSINESS FUND ---------------- */
+let bizTab = "shares";
+function renderBusinessFund(){
+  const c = document.getElementById("content");
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <div class="section-head"><div><h2>Business Fund</h2><div class="desc">Member-pooled investment capital, purchase, inventory &amp; sales.</div></div></div>
+    <div class="chip-row" id="bizTabs">
+      <button class="chip ${bizTab==='shares'?'active':''}" data-tab="shares">Business Share</button>
+      <button class="chip ${bizTab==='purchase'?'active':''}" data-tab="purchase">Purchase</button>
+      <button class="chip ${bizTab==='inventory'?'active':''}" data-tab="inventory">Inventory</button>
+      <button class="chip ${bizTab==='sales'?'active':''}" data-tab="sales">Sales</button>
+    </div>
+    <div id="bizContent"></div>`;
+  c.appendChild(wrap);
+  document.querySelectorAll("#bizTabs .chip").forEach(b=> b.onclick = ()=>{ bizTab = b.dataset.tab; renderBusinessFund(); });
+  renderBizContent();
+}
+function renderBizContent(){
+  const el = document.getElementById("bizContent");
+  if(bizTab==="shares"){
+    if(MEMBERS.length===0){ el.innerHTML = `<div class="card">${emptyState("🏪","No members yet","Register members and record contributions to build the Business Fund.")}</div>`; return; }
+    el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Member</th><th>Invested Capital</th><th>Investment %</th></tr></thead>
+    <tbody>${MEMBERS.map(m=>`<tr><td>${m.name} <span class="mono" style="color:var(--muted)">(${m.memberId})</span></td><td class="mono">${fmt(m.invested||0)}</td><td>
+    <div style="display:flex; align-items:center; gap:8px;"><div class="progress" style="width:80px;"><div style="width:${Math.min((m.investPct||0)*6,100)}%"></div></div><span class="mono">${m.investPct||0}%</span></div></td></tr>`).join("")}</tbody></table></div>`;
+  } else if(bizTab==="purchase"){
+    el.innerHTML = `<div class="section-head" style="margin-top:2px;"><div></div><button class="btn btn-primary btn-sm" id="addPurchaseBtn">＋ New Purchase</button></div>` +
+    (PURCHASES.length===0? `<div class="card">${emptyState("📦","No purchases recorded","Purchases for the Business Fund will show here.")}</div>` :
+    `<div class="table-wrap"><table><thead><tr><th>Purchase #</th><th>Supplier</th><th>Items</th><th>Qty</th><th>Unit Price</th><th>Total</th><th>Date</th></tr></thead>
+    <tbody>${PURCHASES.map(p=>`<tr><td class="mono">${p.purId||p._id.slice(0,6)}</td><td>${p.supplier}</td><td>${p.items}</td><td>${p.qty}</td><td class="mono">${fmt(p.unitPrice)}</td><td class="mono">${fmt(p.total)}</td><td>${p.date}</td></tr>`).join("")}</tbody></table></div>`);
+    setTimeout(()=>{
+      const btn = document.getElementById("addPurchaseBtn");
+      if(btn) btn.onclick = ()=> openModal("New Purchase", `
+        <div class="field"><label>Supplier</label><input type="text" id="puSupplier"></div>
+        <div class="field"><label>Items</label><input type="text" id="puItems" placeholder="e.g. Rice, Sugar"></div>
+        <div class="field"><label>Quantity</label><input type="number" id="puQty"></div>
+        <div class="field"><label>Unit Price</label><input type="number" id="puPrice"></div>
+      `, [
+        {label:"Cancel", cls:"btn-ghost", action:closeModal},
+        {label:"Save Purchase", cls:"btn-primary", action: async ()=>{
+          const qty = +document.getElementById("puQty").value||0;
+          const price = +document.getElementById("puPrice").value||0;
+          try{
+            const purId = await nextSequence("purchases","PUR-",200);
+            await addDoc(collection(db,"purchases"), { purId, supplier:document.getElementById("puSupplier").value||"—", items:document.getElementById("puItems").value||"—", qty, unitPrice:price, total: qty*price, date: todayStr(), createdAt: serverTimestamp() });
+            closeModal(); toast("Purchase recorded");
+          }catch(err){ toast("Save failed: "+err.message, true); }
+        }}
+      ]);
+    },0);
+  } else if(bizTab==="inventory"){
+    el.innerHTML = `<div class="section-head" style="margin-top:2px;"><div></div><button class="btn btn-primary btn-sm" id="addInvBtn">＋ Add Product</button></div>` +
+    (INVENTORY.length===0? `<div class="card">${emptyState("📦","No inventory items","Add a product to start tracking stock.")}</div>` :
+    `<div class="table-wrap"><table><thead><tr><th>Product</th><th>Stock</th><th>Available</th><th>Sold</th><th>Damaged</th></tr></thead>
+    <tbody>${INVENTORY.map(i=>`<tr><td>${i.product}</td><td class="mono">${i.stock}</td><td class="mono">${i.available}</td><td class="mono">${i.sold}</td><td class="mono">${i.damaged}</td></tr>`).join("")}</tbody></table></div>`);
+    setTimeout(()=>{
+      const btn = document.getElementById("addInvBtn");
+      if(btn) btn.onclick = ()=> openModal("Add Inventory Product", `
+        <div class="field"><label>Product Name</label><input type="text" id="ivProduct"></div>
+        <div class="field"><label>Total Stock</label><input type="number" id="ivStock"></div>
+      `, [
+        {label:"Cancel", cls:"btn-ghost", action:closeModal},
+        {label:"Save Product", cls:"btn-primary", action: async ()=>{
+          const stock = +document.getElementById("ivStock").value||0;
+          try{
+            await addDoc(collection(db,"inventory"), { product:document.getElementById("ivProduct").value||"—", stock, available: stock, sold:0, damaged:0, createdAt: serverTimestamp() });
+            closeModal(); toast("Product added to inventory");
+          }catch(err){ toast("Save failed: "+err.message, true); }
+        }}
+      ]);
+    },0);
+  } else if(bizTab==="sales"){
+    el.innerHTML = `<div class="section-head" style="margin-top:2px;"><div></div><button class="btn btn-primary btn-sm" id="addSaleBtn">＋ New Sale</button></div>` +
+    (SALES.length===0? `<div class="card">${emptyState("🧾","No sales recorded","Business Fund sales will appear here.")}</div>` :
+    `<div class="table-wrap"><table><thead><tr><th>Sale #</th><th>Customer</th><th>Items</th><th>Total</th><th>Profit</th><th>Date</th></tr></thead>
+    <tbody>${SALES.map(s=>`<tr><td class="mono">${s.saleId||s._id.slice(0,6)}</td><td>${s.customer}</td><td>${s.items}</td><td class="mono">${fmt(s.total)}</td><td class="mono" style="color:var(--success)">${fmt(s.profit)}</td><td>${s.date}</td></tr>`).join("")}</tbody></table></div>`);
+    setTimeout(()=>{
+      const btn = document.getElementById("addSaleBtn");
+      if(btn) btn.onclick = ()=> openModal("New Sale", `
+        <div class="field"><label>Customer</label><input type="text" id="saCustomer"></div>
+        <div class="field"><label>Items</label><input type="text" id="saItems"></div>
+        <div class="field"><label>Total Amount</label><input type="number" id="saTotal"></div>
+        <div class="field"><label>Profit</label><input type="number" id="saProfit"></div>
+      `, [
+        {label:"Cancel", cls:"btn-ghost", action:closeModal},
+        {label:"Save Sale", cls:"btn-primary", action: async ()=>{
+          try{
+            const saleId = await nextSequence("sales","SAL-",300);
+            await addDoc(collection(db,"sales"), { saleId, customer:document.getElementById("saCustomer").value||"—", items:document.getElementById("saItems").value||"—", total:+document.getElementById("saTotal").value||0, profit:+document.getElementById("saProfit").value||0, date: todayStr(), createdAt: serverTimestamp() });
+            closeModal(); toast("Sale recorded");
+          }catch(err){ toast("Save failed: "+err.message, true); }
+        }}
+      ]);
+    },0);
+  }
+}
+
+/* ---------------- PROFIT DISTRIBUTION ---------------- */
+function renderProfitDistribution(){
+  const c = document.getElementById("content");
+  const totalProfit = SALES.reduce((s,x)=>s+(x.profit||0),0);
+  const donation = +(totalProfit*SETTINGS.donationPct/100).toFixed(0);
+  const distributable = totalProfit - donation;
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <div class="section-head"><div><h2>Profit Distribution</h2><div class="desc">${SETTINGS.donationPct}% auto-deducted to Donation Fund; remainder split by investment share.</div></div>
+    <button class="btn btn-gold" id="calcProfitBtn">⚡ Calculate &amp; Distribute</button></div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr); margin-bottom:20px;">
+      <div class="kpi" style="--bar:var(--gold)"><div class="k-label">Total Profit (Recorded Sales)</div><div class="k-value">${fmt(totalProfit)}</div></div>
+      <div class="kpi" style="--bar:var(--danger)"><div class="k-label">Donation Deduction (${SETTINGS.donationPct}%)</div><div class="k-value">${fmt(donation)}</div></div>
+      <div class="kpi" style="--bar:var(--success)"><div class="k-label">Distributable to Members</div><div class="k-value">${fmt(distributable)}</div></div>
+    </div>`;
+  if(MEMBERS.length===0 || totalProfit===0){
+    wrap.innerHTML += `<div class="card">${emptyState("◷","Nothing to distribute yet","Record members and Business Fund sales to calculate profit distribution.")}</div>`;
+  } else {
+    wrap.innerHTML += `<div class="table-wrap"><table><thead><tr><th>Member</th><th>Investment %</th><th>Profit Share</th></tr></thead>
+    <tbody>${MEMBERS.map(m=>`<tr><td>${m.name}</td><td>${m.investPct||0}%</td><td class="mono">${fmt(distributable*(m.investPct||0)/100)}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  c.appendChild(wrap);
+  document.getElementById("calcProfitBtn").onclick = async ()=>{
+    if(totalProfit===0){ toast("Distribute karne ke liye pehle Business Fund sales record karein", true); return; }
+    try{
+      await addDoc(collection(db,"donations"), { donId: await nextSequence("donations","DON-",10), source:"Profit Distribution (auto)", amount: donation, date: todayStr(), utilized:"Pending allocation", createdAt: serverTimestamp() });
+      toast("Profit distributed — Donation Fund updated");
+    }catch(err){ toast("Failed: "+err.message, true); }
+  };
+}
+
+/* ---------------- DONATION FUND ---------------- */
+function renderDonationFund(){
+  const c = document.getElementById("content");
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `<div class="section-head"><div><h2>Donation Fund</h2><div class="desc">Charitable contributions received and their utilization.</div></div>
+  <button class="btn btn-primary" id="donAddBtn">＋ Record Donation</button></div>`;
+  if(DONATIONS.length===0){
+    wrap.innerHTML += `<div class="card">${emptyState("❤","No donations recorded yet","Donations you record will appear here.")}</div>`;
+  } else {
+    wrap.innerHTML += `<div class="table-wrap"><table><thead><tr><th>Donation #</th><th>Source</th><th>Amount</th><th>Date</th><th>Utilization</th></tr></thead>
+    <tbody>${DONATIONS.map(d=>`<tr><td class="mono">${d.donId||d._id.slice(0,6)}</td><td>${d.source}</td><td class="mono">${fmt(d.amount)}</td><td>${d.date}</td><td>${d.utilized}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  c.appendChild(wrap);
+  document.getElementById("donAddBtn").onclick = ()=>{
+    openModal("Record Donation", `
+      <div class="field"><label>Source</label><input type="text" id="donSource" placeholder="e.g. External Donor — Name"></div>
+      <div class="field"><label>Amount</label><input type="number" id="donAmount"></div>
+    `, [
+      {label:"Cancel", cls:"btn-ghost", action:closeModal},
+      {label:"Save Donation", cls:"btn-primary", action: async ()=>{
+        try{
+          const donId = await nextSequence("donations","DON-",10);
+          await addDoc(collection(db,"donations"), { donId, source:document.getElementById("donSource").value||"—", amount:+document.getElementById("donAmount").value||0, date: todayStr(), utilized:"Pending allocation", createdAt: serverTimestamp() });
+          closeModal(); toast("Donation recorded");
+        }catch(err){ toast("Save failed: "+err.message, true); }
+      }}
+    ]);
+  };
+}
+
+/* ---------------- EXPENSES ---------------- */
+function renderExpenses(){
+  const c = document.getElementById("content");
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `<div class="section-head"><div><h2>Expenses</h2><div class="desc">Operating expenses across the organization.</div></div>
+  <button class="btn btn-primary" id="expAddBtn">＋ Add Expense</button></div>`;
+  if(EXPENSES.length===0){
+    wrap.innerHTML += `<div class="card">${emptyState("🧾","No expenses recorded yet","Expenses you add will appear here.")}</div>`;
+  } else {
+    wrap.innerHTML += `<div class="table-wrap"><table><thead><tr><th>Expense #</th><th>Category</th><th>Vendor</th><th>Amount</th><th>Method</th><th>Date</th></tr></thead>
+    <tbody>${EXPENSES.map(e=>`<tr><td class="mono">${e.expId||e._id.slice(0,6)}</td><td>${e.category}</td><td>${e.vendor}</td><td class="mono">${fmt(e.amount)}</td><td>${e.method}</td><td>${e.date}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  c.appendChild(wrap);
+  document.getElementById("expAddBtn").onclick = ()=>{
+    openModal("Add Expense", `
+      <div class="field"><label>Category</label><select id="expCat"><option>Office</option><option>Utilities</option><option>Printing</option><option>Transport</option><option>Salaries</option></select></div>
+      <div class="field"><label>Vendor</label><input type="text" id="expVendor"></div>
+      <div class="field"><label>Amount</label><input type="number" id="expAmt"></div>
+      <div class="field"><label>Payment Method</label><select id="expMethod"><option>Cash</option><option>Bank Transfer</option><option>Mobile Wallet</option></select></div>
+    `, [
+      {label:"Cancel", cls:"btn-ghost", action:closeModal},
+      {label:"Save Expense", cls:"btn-primary", action: async ()=>{
+        try{
+          const expId = await nextSequence("expenses","EXP-",70);
+          await addDoc(collection(db,"expenses"), { expId, category:document.getElementById("expCat").value, vendor:document.getElementById("expVendor").value||"—", amount:+document.getElementById("expAmt").value||0, method:document.getElementById("expMethod").value, date: todayStr(), createdAt: serverTimestamp() });
+          closeModal(); toast("Expense recorded");
+        }catch(err){ toast("Save failed: "+err.message, true); }
+      }}
+    ]);
+  };
+}
+
+/* ---------------- ACCOUNTING ---------------- */
+function renderAccounting(){
+  const c = document.getElementById("content");
+  const k = computeKPIs();
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <div class="section-head"><div><h2>Accounting</h2><div class="desc">Live trial balance derived from all modules.</div></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Account</th><th>Debit</th><th>Credit</th></tr></thead>
+      <tbody>
+        <tr><td>Cash in Hand</td><td class="mono">${fmt(Math.max(k.cashInHand,0))}</td><td class="mono">—</td></tr>
+        <tr><td>Business Fund (Member Capital)</td><td class="mono">—</td><td class="mono">${fmt(k.businessFund)}</td></tr>
+        <tr><td>Emergency Fund</td><td class="mono">—</td><td class="mono">${fmt(Math.max(k.emergencyFund,0))}</td></tr>
+        <tr><td>Donation Fund</td><td class="mono">—</td><td class="mono">${fmt(k.donationFund)}</td></tr>
+        <tr><td>Operating Expenses</td><td class="mono">${fmt(k.totalExpenses)}</td><td class="mono">—</td></tr>
+        <tr><td>Sales Revenue</td><td class="mono">—</td><td class="mono">${fmt(k.totalSales)}</td></tr>
+      </tbody></table></div>
+    <div style="font-size:11.5px; color:var(--muted); margin-top:10px;">Figures are computed live from your Firestore data (Contributions, Funds, Business, Expenses).</div>`;
+  c.appendChild(wrap);
+}
+
+/* ---------------- REPORTS ---------------- */
+function renderReports(){
+  const c = document.getElementById("content");
+  const groups = [
+    {title:"Member Reports", items:["Member Statement","Contribution Report"]},
+    {title:"Fund Reports", items:["Emergency Fund","Educational Fund","Business Fund","Donation Fund"]},
+    {title:"Financial Reports", items:["Income","Expenses","Profit & Loss"]},
+    {title:"Business Reports", items:["Purchase","Sales","Stock"]},
+  ];
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `<div class="section-head"><div><h2>Reports</h2><div class="desc">Generate reports from your live Firestore data.</div></div></div>`;
+  const grid = document.createElement("div");
+  grid.style.display = "grid"; grid.style.gridTemplateColumns = "repeat(2, 1fr)"; grid.style.gap = "14px";
+  groups.forEach(g=>{
+    const card = document.createElement("div");
+    card.className = "card list-card";
+    card.innerHTML = `<div class="card-title">${g.title}</div>` + g.items.map(it=>`
+      <div class="list-row"><div class="dot-ic">📄</div><div class="lr-title" style="font-weight:500;">${it}</div>
+      <div class="lr-right"><button class="btn btn-ghost btn-sm" onclick="window.print()">Print / Export</button></div></div>`).join("");
+    grid.appendChild(card);
+  });
+  wrap.appendChild(grid);
+  c.appendChild(wrap);
+}
+
+/* ---------------- NOTIFICATIONS PAGE ---------------- */
+function renderNotificationsPage(){
+  const c = document.getElementById("content");
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `<div class="section-head"><div><h2>Notifications</h2><div class="desc">Pending items across the system.</div></div></div>`;
+  const pending = [
+    ...EMERGENCY_REQUESTS.filter(e=>e.status==="Pending").map(e=>({icon:"⛑", title:`${e.memberName} — Emergency`, sub:e.reason, time:e.date})),
+    ...EDUCATION_APPS.filter(e=>e.status==="Pending").map(e=>({icon:"🎓", title:`${e.memberName} — Education`, sub:e.institution, time:""})),
+  ];
+  const card = document.createElement("div");
+  card.className = "card list-card";
+  card.innerHTML = `<div class="card-title">Pending Items</div>`;
+  card.innerHTML += pending.length ? pending.map(n=>rowHTML(n.icon,n.title,n.sub,n.time)).join("") : `<div style="padding:6px;">${emptyState("🔔","No notifications","You're all caught up.")}</div>`;
+  wrap.appendChild(card);
+  c.appendChild(wrap);
+}
+
+/* ---------------- USERS & ROLES ---------------- */
+function renderUsers(){
+  const c = document.getElementById("content");
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `<div class="section-head"><div><h2>Users &amp; Roles</h2><div class="desc">Accounts registered via Sign In / Create Admin Account.</div></div></div>`;
+  if(USERS_LIST.length===0){
+    wrap.innerHTML += `<div class="card">${emptyState("🛡","No users yet","Users appear here once they create an account.")}</div>`;
+  } else {
+    wrap.innerHTML += `<div class="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Email</th></tr></thead>
+    <tbody>${USERS_LIST.map(u=>`<tr><td>${u.name}</td><td><span class="tag tag-teal">${u.role}</span></td><td>${u.email}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  c.appendChild(wrap);
+}
+
+/* ---------------- SETTINGS ---------------- */
+function renderSettings(){
+  const c = document.getElementById("content");
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <div class="section-head"><div><h2>Settings</h2><div class="desc">Financial configuration — saved to Firestore.</div></div></div>
+    <div class="card" style="padding:20px; max-width:480px;">
+      <div class="card-title" style="padding:0 0 14px; border:none;">Financial Settings</div>
+      <div class="field"><label>Emergency Fund %</label><input type="number" id="stEmergency" value="${SETTINGS.emergencyPct}"></div>
+      <div class="field"><label>Business Fund %</label><input type="number" id="stBusiness" value="${SETTINGS.businessPct}"></div>
+      <div class="field"><label>Donation % on Profit</label><input type="number" id="stDonation" value="${SETTINGS.donationPct}"></div>
+      <button class="btn btn-primary btn-sm" id="stSave">Save Changes</button>
+    </div>
+    <div class="footer-credit" style="margin-top:20px;">This application — <b>Developed by Saeed ul Rehman</b></div>`;
+  c.appendChild(wrap);
+  document.getElementById("stSave").onclick = async ()=>{
+    try{
+      await setDoc(doc(db,"settings","config"), {
+        emergencyPct: +document.getElementById("stEmergency").value||25,
+        businessPct: +document.getElementById("stBusiness").value||75,
+        donationPct: +document.getElementById("stDonation").value||5,
+      }, { merge:true });
+      toast("Settings saved");
+    }catch(err){ toast("Save failed: "+err.message, true); }
+  };
+}
+
+/* ---------------- MODAL HELPERS ---------------- */
+function openModal(title, bodyHTML, buttons){
+  document.getElementById("modalTitle").textContent = title;
+  document.getElementById("modalBody").innerHTML = bodyHTML;
+  const foot = document.getElementById("modalFoot");
+  foot.innerHTML = "";
+  buttons.forEach(b=>{
+    const btn = document.createElement("button");
+    btn.className = "btn " + b.cls; btn.textContent = b.label; btn.onclick = b.action;
+    foot.appendChild(btn);
+  });
+  document.getElementById("modalBackdrop").classList.add("show");
+}
+function closeModal(){ document.getElementById("modalBackdrop").classList.remove("show"); }
+document.getElementById("modalClose").onclick = closeModal;
+document.getElementById("modalBackdrop").addEventListener("click", (e)=>{ if(e.target.id === "modalBackdrop") closeModal(); });
+
+/* ---------------- GLOBAL SEARCH ---------------- */
+document.getElementById("globalSearch").addEventListener("keydown", (e)=>{
+  if(e.key !== "Enter") return;
+  const q = e.target.value.trim().toLowerCase();
+  if(!q) return;
+  const hit = MEMBERS.find(m => (m.memberId||"").toLowerCase().includes(q) || (m.cnic||"").toLowerCase().includes(q) || (m.mobile||"").toLowerCase().includes(q) || (m.name||"").toLowerCase().includes(q));
+  if(hit){ navigate("members"); toast(`Found member: ${hit.name} (${hit.memberId})`); return; }
+  const rct = CONTRIBUTIONS.find(cn => (cn.receiptNo||"").toLowerCase().includes(q));
+  if(rct){ navigate("contributions"); toast(`Found receipt: ${rct.receiptNo}`); return; }
+  toast("No matching Member, CNIC, Mobile, or Receipt found", true);
+});
+
+/* ---------------- MOBILE MENU / BELL ---------------- */
+document.getElementById("menuToggle").onclick = ()=> document.getElementById("sidebar").classList.toggle("open");
+document.getElementById("bellBtn").onclick = ()=> navigate("notifications");
+
+</script>
+
+</body>
+</html>
